@@ -1,0 +1,45 @@
+---
+import Layout from "@/layouts/Layout.astro";
+import moment from "moment";
+import { formatSize } from "@/lib/utils";
+import { arrayBufferToBase64 } from "@/lib/utils";
+import { CalendarDays, HardDrive } from "lucide-react";
+
+const { fileName } = Astro.params;
+const { BUCKET, BUCKET_KEY_PREFIX } = Astro.locals.runtime.env;
+const file = await BUCKET.get(`${BUCKET_KEY_PREFIX}${fileName}`);
+
+if (!file) {
+  return Astro.redirect("/");
+}
+
+const fileBuffer = await file.arrayBuffer();
+const fileBase64 = arrayBufferToBase64(fileBuffer);
+---
+
+<Layout
+  title={file.key.split("/").pop() || "?"}
+  imageUrl={`${Astro.locals.runtime.env.BUCKET_URL}/${file.key}`}
+>
+  <div class="h-screen w-full flex items-center justify-center">
+    <div class="shadow-2xl rounded-lg bg-gray-900 p-5 min-w-[500px]">
+      <img
+        src={`data:image/png;base64, ${fileBase64}`}
+        alt="Uploaded image"
+        class="rounded-md w-full"
+      />
+      <div class="mt-2 flex items-center justify-between">
+        <div class="flex items-center justify-center space-x-2">
+          <CalendarDays className="w-5 h-5 stroke-white" />
+          <p>
+            {moment.utc(file.uploaded || "").format("MMMM Do YYYY, h:mm:ss a")}
+          </p>
+        </div>
+        <div class="flex items-center justify-center space-x-2">
+          <HardDrive className="w-5 h-5 stroke-white" />
+          <p>{formatSize(file.size || 0)}</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</Layout>
