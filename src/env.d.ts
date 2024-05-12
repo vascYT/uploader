@@ -1,4 +1,3 @@
-/// <reference path="../.astro/actions.d.ts" />
 /// <reference types="astro/client" />
 
 type R2Bucket = import("@cloudflare/workers-types").R2Bucket;
